@@ -108,12 +108,12 @@ function updateAddRowButtonState() {
  * Get the base API URL considering the deployment environment
  */
 function getBaseUrl() {
-    // Check if we're running on Vercel
-    if (window.location.hostname.includes('vercel.app')) {
-        return window.location.origin;
-    }
-    // Local development
+    // Use window.location.origin for all environments
+    // This works for both local development and Vercel
     return window.location.origin;
+    
+    // Log the URL being used (for debugging)
+    console.log('Using API URL:', window.location.origin);
 }
 
 /**

@@ -21,20 +21,24 @@ TEMPLATES_DIR.mkdir(exist_ok=True)
 
 app = FastAPI(title="Kundenstandorte Visualisierung")
 
-# Configure CORS
+# Configure CORS with specific settings for Vercel
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
+    expose_headers=["*"]
 )
 
-# Mount static files
-app.mount("/static", StaticFiles(directory="static"), name="static")
+# Mount static files with custom config
+app.mount("/static", StaticFiles(directory="static", html=True), name="static")
 
-# Templates
+# Templates with absolute path
 templates = Jinja2Templates(directory="templates")
+templates.env.globals.update({
+    "VERCEL_URL": os.environ.get("VERCEL_URL", "http://localhost:8000")
+})
 
 class Customer(BaseModel):
     kundennummer: str
