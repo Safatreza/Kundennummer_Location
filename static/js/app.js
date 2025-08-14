@@ -1,9 +1,12 @@
 // Global variables
 let map;
 let markers = [];
+let routePolyline = null;
 const MAX_ROWS = 30;
 const DEFAULT_MAP_CENTER = [51.1657, 10.4515]; // Center of Germany
 const DEFAULT_ZOOM = 6;
+const DEPOT_ADDRESS = 'Robert-Koch-Straße 2, 82152 Planegg';
+let depotMarker = null;
 
 // Initialize the application when the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', () => {
@@ -24,6 +27,9 @@ function initializeMap() {
         attribution: '© OpenStreetMap contributors',
         maxZoom: 19
     }).addTo(map);
+
+    // Always show depot on the map (approximate coordinates, refined when geocoded in flow)
+    addDepotToMap();
 }
 
 /**
@@ -34,6 +40,8 @@ function initializeForm() {
     const form = document.getElementById('customerForm');
     const addRowButton = document.getElementById('addRow');
     const resetButton = document.getElementById('resetButton');
+    const addDepotButton = document.getElementById('addDepotRow');
+    const planRouteButton = document.getElementById('planRouteButton');
 
     if (!form || !addRowButton || !resetButton) {
         console.error('Required form elements not found!');
@@ -43,6 +51,8 @@ function initializeForm() {
     form.addEventListener('submit', handleFormSubmit);
     addRowButton.addEventListener('click', addNewRow);
     resetButton.addEventListener('click', resetApplication);
+    if (addDepotButton) addDepotButton.addEventListener('click', addDepotRow);
+    if (planRouteButton) planRouteButton.addEventListener('click', planRoute);
 }
 
 /**
@@ -68,17 +78,26 @@ function addNewRow() {
     row.innerHTML = `
         <div class="remove-row" onclick="removeRow(this)">&times;</div>
         <div class="row">
-            <div class="col-md-4 mb-2">
+            <div class="col-md-3 mb-2">
                 <input type="text" class="form-control" placeholder="Kundennummer" 
                        required pattern="[A-Za-z0-9-]+" title="Nur Buchstaben, Zahlen und Bindestriche erlaubt">
             </div>
-            <div class="col-md-8 mb-2">
+            <div class="col-md-5 mb-2">
                 <input type="text" class="form-control" placeholder="Adresse" required>
+            </div>
+            <div class="col-md-2 mb-2">
+                <select class="form-select" title="Priorität">
+                    <option value="">Flexibel</option>
+                </select>
+            </div>
+            <div class="col-md-2 mb-2">
+                <input type="number" class="form-control" placeholder="Flaschen" min="0">
             </div>
         </div>
     `;
 
     container.appendChild(row);
+    refreshPriorityOptions();
     updateAddRowButtonState();
 }
 
@@ -89,6 +108,7 @@ function removeRow(element) {
     console.log('Removing row...');
     element.closest('.customer-row').remove();
     updateAddRowButtonState();
+    refreshPriorityOptions();
 }
 
 /**
@@ -102,6 +122,33 @@ function updateAddRowButtonState() {
         return;
     }
     addRowButton.disabled = container.children.length >= MAX_ROWS;
+}
+
+function addDepotRow() {
+    const container = document.getElementById('customerInputs');
+    if (!container) return;
+    const row = document.createElement('div');
+    row.className = 'customer-row';
+    row.dataset.depot = 'true';
+    row.innerHTML = `
+        <div class="remove-row" onclick="removeRow(this)">&times;</div>
+        <div class="row">
+            <div class="col-md-3 mb-2">
+                <input type="text" class="form-control" value="DEPOT" readonly>
+            </div>
+            <div class="col-md-5 mb-2">
+                <input type="text" class="form-control" value="${DEPOT_ADDRESS}" readonly>
+            </div>
+            <div class="col-md-2 mb-2">
+                <select class="form-select" disabled><option>Depot</option></select>
+            </div>
+            <div class="col-md-2 mb-2">
+                <input type="number" class="form-control" placeholder="Flaschen" min="0" value="0" readonly>
+            </div>
+        </div>
+    `;
+    container.appendChild(row);
+    updateAddRowButtonState();
 }
 
 /**
@@ -169,6 +216,7 @@ async function handleFormSubmit(event) {
 
     loadingSpinner.classList.remove('d-none');
     clearMarkers();
+    clearRoute();
 
     try {
         const customers = [];
@@ -178,11 +226,19 @@ async function handleFormSubmit(event) {
             const inputs = row.querySelectorAll('input');
             const customerNumber = inputs[0].value.trim();
             const address = inputs[1].value.trim();
+            const isDepot = row.dataset.depot === 'true';
+            const prioritySelect = row.querySelector('select');
+            const priorityVal = prioritySelect ? prioritySelect.value : '';
+            const bottlesInput = inputs[2];
+            const bottlesVal = bottlesInput ? bottlesInput.value.trim() : '';
 
             if (customerNumber && address) {
                 customers.push({
                     kundennummer: customerNumber,
-                    adresse: address
+                    adresse: address,
+                    priority: priorityVal ? parseInt(priorityVal, 10) : null,
+                    bottles: bottlesVal ? parseInt(bottlesVal, 10) : null,
+                    is_depot: isDepot
                 });
             }
         });
@@ -279,6 +335,9 @@ function handleGeocodingResults(results) {
                     `<div class="marker-popup">` +
                     `<strong>Kundennummer:</strong> ${result.kundennummer}<br>` +
                     `<strong>Adresse:</strong> ${result.adresse}` +
+                    (result.priority ? `<br><strong>Priorität:</strong> ${result.priority}` : '') +
+                    (result.bottles != null ? `<br><strong>Flaschen:</strong> ${result.bottles}` : '') +
+                    (result.is_depot ? `<br><span class="badge bg-primary">Depot</span>` : '') +
                     `</div>`
                 );
             
@@ -308,6 +367,7 @@ function clearMarkers() {
     console.log('Clearing markers...');
     markers.forEach(marker => marker.remove());
     markers = [];
+    if (depotMarker) depotMarker.addTo(map);
 }
 
 /**
@@ -326,6 +386,7 @@ function resetApplication() {
     map.setView(DEFAULT_MAP_CENTER, DEFAULT_ZOOM);
     addInitialRow();
     updateAddRowButtonState();
+    clearRoute();
 }
 
 /**
@@ -398,4 +459,141 @@ function showConfirmDialog(title, message) {
 function addInitialRow() {
     console.log('Adding initial row...');
     addNewRow();
+}
+
+function refreshPriorityOptions() {
+    const container = document.getElementById('customerInputs');
+    const rows = container ? Array.from(container.children) : [];
+    const total = rows.filter(r => r.dataset.depot !== 'true').length;
+    rows.forEach(row => {
+        const select = row.querySelector('select');
+        if (!select || row.dataset.depot === 'true') return;
+        const current = select.value;
+        select.innerHTML = `<option value="">Flexibel</option>`;
+        for (let i = 1; i <= Math.max(total, 1); i++) {
+            const opt = document.createElement('option');
+            opt.value = String(i);
+            opt.textContent = String(i);
+            select.appendChild(opt);
+        }
+        if (current && parseInt(current, 10) <= total) {
+            select.value = current;
+        }
+    });
+}
+
+function addDepotToMap() {
+    if (depotMarker) return;
+    depotMarker = L.marker([48.106, 11.425], { title: 'Depot' })
+        .bindTooltip('Depot', { permanent: true, direction: 'top', offset: [0, -30], className: 'customer-tooltip' })
+        .bindPopup(`<div class="marker-popup"><strong>Depot:</strong> ${DEPOT_ADDRESS}</div>`);
+    depotMarker.addTo(map);
+}
+
+function clearRoute() {
+    if (routePolyline) {
+        routePolyline.remove();
+        routePolyline = null;
+    }
+}
+
+async function planRoute() {
+    const baseUrl = getBaseUrl();
+    const rows = document.querySelectorAll('.customer-row');
+    const capacityInput = document.getElementById('capacityInput');
+    const capacity = Math.min(80, Math.max(1, parseInt((capacityInput && capacityInput.value) ? capacityInput.value : '80', 10)));
+
+    const entries = [];
+    rows.forEach(row => {
+        const inputs = row.querySelectorAll('input');
+        const cust = inputs[0].value.trim();
+        const addr = inputs[1].value.trim();
+        const isDepot = row.dataset.depot === 'true';
+        const prioritySelect = row.querySelector('select');
+        const priorityVal = prioritySelect ? prioritySelect.value : '';
+        const bottlesInput = inputs[2];
+        const bottlesVal = bottlesInput ? bottlesInput.value.trim() : '';
+        if (cust && addr) {
+            entries.push({
+                kundennummer: cust,
+                adresse: addr,
+                priority: priorityVal ? parseInt(priorityVal, 10) : null,
+                bottles: bottlesVal ? parseInt(bottlesVal, 10) : null,
+                is_depot: isDepot,
+            });
+        }
+    });
+
+    if (entries.length === 0) {
+        showError('Bitte fügen Sie Adressen hinzu.');
+        return;
+    }
+
+    const withAutoDepots = [];
+    let load = 0;
+    let hasExplicitDepot = entries.some(e => e.is_depot);
+    for (const e of entries) {
+        const demand = e.bottles ? Math.max(0, e.bottles) : 0;
+        if (!hasExplicitDepot && load + demand > capacity) {
+            withAutoDepots.push({ kundennummer: 'DEPOT', adresse: DEPOT_ADDRESS, is_depot: true });
+            load = 0;
+        }
+        withAutoDepots.push(e);
+        load += demand;
+    }
+
+    const geoRes = await fetch(`${baseUrl}/geocode`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(withAutoDepots)
+    });
+    if (!geoRes.ok) {
+        showError('Fehler bei der Geokodierung.');
+        return;
+    }
+    const geoData = await geoRes.json();
+    const valid = (geoData.results || []).filter(r => r.lat && r.lon);
+
+    const stops = valid.map(r => ({
+        kundennummer: r.kundennummer,
+        adresse: r.adresse,
+        lat: r.lat,
+        lon: r.lon,
+        priority: r.priority ?? null,
+        bottles: r.bottles ?? null,
+        is_depot: r.is_depot === true || r.kundennummer === 'DEPOT'
+    }));
+
+    const routeRes = await fetch(`${baseUrl}/route-plan`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ stops, capacity })
+    });
+    if (!routeRes.ok) {
+        showError('Fehler bei der Routenplanung.');
+        return;
+    }
+    const routeData = await routeRes.json();
+    drawRoute(routeData.route || []);
+}
+
+function drawRoute(route) {
+    clearRoute();
+    if (!route || route.length === 0) return;
+    // Update depot marker position if present in route
+    const depotStep = route.find(s => s.is_depot);
+    if (depotStep) {
+        if (!depotMarker) {
+            depotMarker = L.marker([depotStep.lat, depotStep.lon], { title: 'Depot' })
+                .bindTooltip('Depot', { permanent: true, direction: 'top', offset: [0, -30], className: 'customer-tooltip' })
+                .bindPopup(`<div class="marker-popup"><strong>Depot:</strong> ${DEPOT_ADDRESS}</div>`)
+                .addTo(map);
+        } else {
+            depotMarker.setLatLng([depotStep.lat, depotStep.lon]);
+        }
+    }
+    const latlngs = route.map(s => [s.lat, s.lon]);
+    routePolyline = L.polyline(latlngs, { color: 'blue', weight: 4, opacity: 0.8 });
+    routePolyline.addTo(map);
+    map.fitBounds(routePolyline.getBounds(), { padding: [40, 40] });
 }

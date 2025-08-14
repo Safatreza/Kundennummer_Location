@@ -73,6 +73,15 @@
     font-size: 12px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.2);
 }
+.route-legend {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    background: rgba(255,255,255,0.95);
+    border: 1px solid #ccc;
+    padding: 8px 12px;
+    border-radius: 4px;
+}
 
 .customer-tooltip:before {
     border-top-color: #007bff;
