@@ -2,6 +2,8 @@
 
 A professional route optimization system for delivery planning with interactive maps, built with FastAPI and modern web technologies.
 
+<!-- Deployment Trigger: Update for Vercel Production -->
+
 ## ✨ Features
 
 - **Interactive Map Interface** - Built with Leaflet.js and OpenStreetMap
