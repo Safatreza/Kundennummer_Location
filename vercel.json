@@ -1,0 +1,30 @@
+{
+  "version": 2,
+  "name": "aboutwater-route-optimizer",
+  "builds": [
+    {
+      "src": "main.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/static/(.*)",
+      "dest": "/static/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/main.py"
+    }
+  ],
+  "env": {
+    "ENVIRONMENT": "production",
+    "HOST": "0.0.0.0",
+    "PORT": "8000"
+  },
+  "functions": {
+    "main.py": {
+      "maxDuration": 30
+    }
+  }
+}
