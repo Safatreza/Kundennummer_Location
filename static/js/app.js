@@ -1,5 +1,5 @@
 /**
- * aboutwater Route Optimizer - Modern Frontend Application
+ * aboutwater Route Optimizer - Static Client Application
  * Version 3.0.1 - Professional Route Optimization System
  */
 
@@ -8,24 +8,28 @@ class RouteOptimizerApp {
         this.map = null;
         this.markers = new Map();
         this.routeLines = [];
-        this.addresses = new Map();
+        this.addresses = JSON.parse(localStorage.getItem('aboutwater_addresses') || '[]');
         this.optimizedTours = [];
-        this.serverInfo = null;
+        this.nextId = parseInt(localStorage.getItem('aboutwater_next_id') || '1');
         
-        // API base URL
-        this.apiBase = '/api/v1';
+        // Static HQ location (aboutwater HQ - Munich area)
+        this.hqLocation = {
+            lat: 48.1375,
+            lng: 11.5755,
+            name: "aboutwater HQ",
+            address: "München, Deutschland"
+        };
         
         this.init();
     }
 
-    async init() {
-        console.log('🚀 Initializing aboutwater Route Optimizer v3.0.1');
+    init() {
+        console.log('🚀 Initializing aboutwater Route Optimizer v3.0.1 (Static)');
         
         try {
-            await this.loadServerInfo();
             this.initializeMap();
             this.setupEventListeners();
-            await this.loadExistingAddresses();
+            this.loadExistingAddresses();
             
             console.log('✅ Application initialized successfully');
         } catch (error) {
@@ -34,23 +38,13 @@ class RouteOptimizerApp {
         }
     }
 
-    async loadServerInfo() {
-        try {
-            const response = await fetch('/server-info');
-            this.serverInfo = await response.json();
-            console.log(`📡 Connected to server ${this.serverInfo.server_id}`);
-        } catch (error) {
-            console.warn('Could not load server info:', error);
-        }
-    }
-
     initializeMap() {
         const mapElement = document.getElementById('map');
         const loadingElement = mapElement.querySelector('.map-loading');
         
         try {
-            // Initialize Leaflet map
-            this.map = L.map('map').setView([48.1067, 11.4247], 10);
+            // Initialize Leaflet map centered on Munich
+            this.map = L.map('map').setView([this.hqLocation.lat, this.hqLocation.lng], 10);
             
             // Add OpenStreetMap tiles
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -82,7 +76,7 @@ class RouteOptimizerApp {
     }
 
     addHQMarker() {
-        if (!this.map || !this.serverInfo) return;
+        if (!this.map) return;
         
         const hqIcon = L.divIcon({
             html: '<div class="hq-marker">HQ</div>',
@@ -91,10 +85,9 @@ class RouteOptimizerApp {
             iconAnchor: [15, 15]
         });
         
-        const hq = this.serverInfo.hq_location;
-        const hqMarker = L.marker([hq.lat, hq.lon], { icon: hqIcon })
+        const hqMarker = L.marker([this.hqLocation.lat, this.hqLocation.lng], { icon: hqIcon })
             .addTo(this.map)
-            .bindPopup(`<strong>${hq.name}</strong><br>${hq.address}<br><em>Start & End Point</em>`);
+            .bindPopup(`<strong>${this.hqLocation.name}</strong><br>${this.hqLocation.address}<br><em>Start & End Point</em>`);
             
         this.markers.set('HQ', hqMarker);
     }
@@ -173,7 +166,7 @@ class RouteOptimizerApp {
         
         const addressData = {
             address: formData.get('address').trim(),
-            delivery_id: formData.get('deliveryId').trim() || null,
+            delivery_id: formData.get('deliveryId').trim() || this.generateDeliveryId(),
             bottles: parseInt(formData.get('bottles')) || 0,
             priority: formData.get('priority') ? parseInt(formData.get('priority')) : null
         };
@@ -186,19 +179,20 @@ class RouteOptimizerApp {
         this.showLoading(true);
 
         try {
-            const response = await fetch(`${this.apiBase}/addresses`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(addressData)
-            });
+            // Geocode address using Nominatim
+            const coordinates = await this.geocodeAddress(addressData.address);
+            
+            const newAddress = {
+                id: this.nextId++,
+                ...addressData,
+                lat: coordinates.lat,
+                lng: coordinates.lng,
+                timestamp: new Date().toISOString(),
+                optimized: false
+            };
 
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.detail || 'Failed to add address');
-            }
-
-            const newAddress = await response.json();
-            this.addresses.set(newAddress.id, newAddress);
+            this.addresses.push(newAddress);
+            this.saveToLocalStorage();
             
             this.addAddressToMap(newAddress);
             this.updateAddressList();
@@ -210,27 +204,54 @@ class RouteOptimizerApp {
             
         } catch (error) {
             console.error('Error adding address:', error);
-            this.showError(error.message);
+            this.showError('Could not find the address. Please check and try again.');
         } finally {
             this.showLoading(false);
         }
     }
 
-    async loadExistingAddresses() {
+    async geocodeAddress(address) {
+        const encodedAddress = encodeURIComponent(address);
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodedAddress}&limit=1&addressdetails=1`;
+        
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error('Geocoding request failed');
+        }
+        
+        const data = await response.json();
+        if (data.length === 0) {
+            throw new Error('Address not found');
+        }
+        
+        return {
+            lat: parseFloat(data[0].lat),
+            lng: parseFloat(data[0].lon)
+        };
+    }
+
+    generateDeliveryId() {
+        const timestamp = Date.now().toString(36).toUpperCase();
+        const random = Math.random().toString(36).substr(2, 4).toUpperCase();
+        return `AW-${timestamp}-${random}`;
+    }
+
+    saveToLocalStorage() {
+        localStorage.setItem('aboutwater_addresses', JSON.stringify(this.addresses));
+        localStorage.setItem('aboutwater_next_id', this.nextId.toString());
+    }
+
+    loadExistingAddresses() {
         try {
-            const response = await fetch(`${this.apiBase}/addresses`);
-            const addresses = await response.json();
-            
-            this.addresses.clear();
-            addresses.forEach(address => {
-                this.addresses.set(address.id, address);
-                this.addAddressToMap(address);
-            });
-            
-            this.updateAddressList();
-            this.updateStatistics();
-            
-            if (addresses.length > 0) {
+            // Addresses are already loaded from localStorage in constructor
+            if (this.addresses.length > 0) {
+                this.addresses.forEach(address => {
+                    this.addAddressToMap(address);
+                });
+                
+                this.updateAddressList();
+                this.updateStatistics();
+                
                 setTimeout(() => this.fitMapToMarkers(), 500);
             }
             
@@ -240,7 +261,7 @@ class RouteOptimizerApp {
     }
 
     addAddressToMap(address) {
-        if (!this.map || !address.lat || !address.lon) return;
+        if (!this.map || !address.lat || !address.lng) return;
 
         const className = address.optimized ? 'tour-marker' : 'address-marker';
         const content = address.optimized ? address.stop_order : address.bottles;
@@ -253,7 +274,7 @@ class RouteOptimizerApp {
             iconAnchor: [16, 16]
         });
 
-        const marker = L.marker([address.lat, address.lon], { icon })
+        const marker = L.marker([address.lat, address.lng], { icon })
             .addTo(this.map)
             .bindPopup(this.createPopupContent(address));
 
@@ -274,26 +295,19 @@ class RouteOptimizerApp {
     }
 
     getPriorityLabel(priority) {
-        const labels = { 1: 'Low (1)', 2: 'Medium (2)', 3: 'High (3)' };
+        const labels = { 1: 'High (1)', 2: 'Medium (2)', 3: 'Low (3)' };
         return labels[priority] || 'Standard';
     }
 
-    async removeAddress(addressId) {
+    removeAddress(addressId) {
         if (!confirm('Are you sure you want to remove this address?')) return;
 
         this.showLoading(true);
 
         try {
-            const response = await fetch(`${this.apiBase}/addresses/${addressId}`, {
-                method: 'DELETE'
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to remove address');
-            }
-
             // Remove from local state
-            this.addresses.delete(addressId);
+            this.addresses = this.addresses.filter(addr => addr.id !== addressId);
+            this.saveToLocalStorage();
             
             // Remove marker from map
             const marker = this.markers.get(addressId);
@@ -306,31 +320,26 @@ class RouteOptimizerApp {
             this.updateStatistics();
             this.clearOptimization();
             
+            console.log(`🗑️ Removed address: ${addressId}`);
+            
         } catch (error) {
             console.error('Error removing address:', error);
-            this.showError(error.message);
+            this.showError('Failed to remove address');
         } finally {
             this.showLoading(false);
         }
     }
 
-    async clearAllAddresses() {
+    clearAllAddresses() {
         if (!confirm('Are you sure you want to clear all addresses?')) return;
 
         this.showLoading(true);
 
         try {
-            const response = await fetch(`${this.apiBase}/addresses`, {
-                method: 'DELETE'
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to clear addresses');
-            }
-
             // Clear local state
-            this.addresses.clear();
+            this.addresses = [];
             this.optimizedTours = [];
+            this.saveToLocalStorage();
             
             // Remove all markers except HQ
             this.markers.forEach((marker, key) => {
@@ -349,16 +358,18 @@ class RouteOptimizerApp {
             
             document.getElementById('exportSection').style.display = 'none';
             
+            console.log('🧹 Cleared all addresses');
+            
         } catch (error) {
             console.error('Error clearing addresses:', error);
-            this.showError(error.message);
+            this.showError('Failed to clear addresses');
         } finally {
             this.showLoading(false);
         }
     }
 
-    async optimizeRoutes() {
-        if (this.addresses.size === 0) {
+    optimizeRoutes() {
+        if (this.addresses.length === 0) {
             this.showError('Please add addresses before optimizing');
             return;
         }
@@ -366,26 +377,17 @@ class RouteOptimizerApp {
         this.showLoading(true);
 
         try {
-            const response = await fetch(`${this.apiBase}/optimize`, {
-                method: 'POST'
-            });
-
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.detail || 'Failed to optimize routes');
-            }
-
-            const result = await response.json();
-            this.optimizedTours = result.tours;
+            // Create optimized tours using static algorithm
+            this.optimizedTours = this.createOptimizedTours();
             
-            // Update address objects with optimization results
-            result.tours.forEach(tour => {
-                tour.addresses.forEach(address => {
-                    if (this.addresses.has(address.id)) {
-                        const localAddress = this.addresses.get(address.id);
+            // Update addresses with tour information
+            this.optimizedTours.forEach(tour => {
+                tour.addresses.forEach((address, index) => {
+                    const localAddress = this.addresses.find(addr => addr.id === address.id);
+                    if (localAddress) {
                         localAddress.optimized = true;
                         localAddress.tour_number = tour.id;
-                        localAddress.stop_order = address.stop_order;
+                        localAddress.stop_order = index + 1;
                     }
                 });
             });
@@ -395,161 +397,124 @@ class RouteOptimizerApp {
             this.updateStatistics();
             this.showExportSection();
             
-            console.log(`✅ Optimized ${result.total_addresses} addresses into ${result.tours.length} tours`);
+            console.log(`✅ Optimized ${this.addresses.length} addresses into ${this.optimizedTours.length} tours`);
             
         } catch (error) {
             console.error('Error optimizing routes:', error);
-            this.showError(error.message);
+            this.showError('Failed to optimize routes');
         } finally {
             this.showLoading(false);
         }
+    }
+
+    createOptimizedTours() {
+        const MAX_BOTTLES_PER_TOUR = 80;
+        const tours = [];
+        let currentTour = [];
+        let currentBottles = 0;
+
+        // Sort addresses by priority (1=High, 2=Medium, 3=Low, null=Standard)
+        const priorityOrder = { 1: 1, 2: 2, 3: 3, null: 4 };
+        const sortedAddresses = [...this.addresses].sort((a, b) => {
+            return (priorityOrder[a.priority] || 4) - (priorityOrder[b.priority] || 4);
+        });
+
+        for (const address of sortedAddresses) {
+            const bottles = address.bottles || 0;
+            
+            // If adding this address would exceed the bottle limit, start a new tour
+            if (currentBottles + bottles > MAX_BOTTLES_PER_TOUR && currentTour.length > 0) {
+                tours.push({
+                    id: tours.length + 1,
+                    addresses: [...currentTour],
+                    total_bottles: currentBottles,
+                    distance: this.calculateTourDistance(currentTour)
+                });
+                currentTour = [];
+                currentBottles = 0;
+            }
+            
+            currentTour.push(address);
+            currentBottles += bottles;
+        }
+
+        // Add the last tour if it has addresses
+        if (currentTour.length > 0) {
+            tours.push({
+                id: tours.length + 1,
+                addresses: [...currentTour],
+                total_bottles: currentBottles,
+                distance: this.calculateTourDistance(currentTour)
+            });
+        }
+
+        return tours;
+    }
+
+    calculateTourDistance(addresses) {
+        if (addresses.length < 2) return 0;
+        
+        let totalDistance = 0;
+        for (let i = 0; i < addresses.length - 1; i++) {
+            const dist = this.calculateDistance(
+                addresses[i].lat, addresses[i].lng,
+                addresses[i + 1].lat, addresses[i + 1].lng
+            );
+            totalDistance += dist;
+        }
+        return Math.round(totalDistance);
+    }
+
+    calculateDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371; // Earth's radius in km
+        const dLat = this.deg2rad(lat2 - lat1);
+        const dLon = this.deg2rad(lon2 - lon1);
+        const a = 
+            Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) * 
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c;
+    }
+
+    deg2rad(deg) {
+        return deg * (Math.PI/180);
     }
 
     displayOptimizedRoutes() {
         // Clear existing route lines
         this.clearRouteLines();
         
-        if (!this.serverInfo) return;
-        
-        const hq = this.serverInfo.hq_location;
-        const tourColors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#8b5cf6', '#ec4899', '#f59e0b'];
-        
-        let deliveryTourNumber = 1;
+        const tourColors = ['#ef4444', '#22c55e', '#3b82f6', '#f59e0b', '#8b5cf6', '#06b6d4'];
         
         this.optimizedTours.forEach((tour, index) => {
-            const isRefillStop = tour.addresses.length === 1 && tour.addresses[0].delivery_id?.includes('HQ-REFILL');
+            const color = tourColors[index % tourColors.length];
             
-            if (isRefillStop) {
-                // Handle HQ refill stop - add visual indicator
-                this.addRefillStopIndicator(tour, index);
-            } else {
-                // Handle regular delivery tour
-                const color = tourColors[(deliveryTourNumber - 1) % tourColors.length];
-                
-                // Create route coordinates
-                const routeCoords = [
-                    [hq.lat, hq.lon], // Start at HQ
-                    ...tour.addresses.map(addr => [addr.lat, addr.lon]),
-                    [hq.lat, hq.lon]  // Return to HQ
-                ];
-                
-                // Create polyline with enhanced styling
-                const routeLine = L.polyline(routeCoords, {
-                    color: color,
-                    weight: 4,
-                    opacity: 0.9,
-                    dashArray: deliveryTourNumber > 1 ? '10, 5' : null  // Dashed lines for tours after first
-                }).addTo(this.map);
-                
-                // Add tour label
-                const midPoint = this.calculateMidpoint(routeCoords);
-                const tourLabel = L.marker(midPoint, {
-                    icon: L.divIcon({
-                        html: `<div class="tour-label" style="background-color: ${color}">Tour ${deliveryTourNumber}</div>`,
-                        className: 'custom-tour-label',
-                        iconSize: [60, 25],
-                        iconAnchor: [30, 12]
-                    })
-                }).addTo(this.map);
-                
-                this.routeLines.push(routeLine);
-                this.routeLines.push(tourLabel);
-                
-                // Update markers with tour-specific styling
-                tour.addresses.forEach((address, stopIndex) => {
-                    const localAddress = this.addresses.get(address.id);
-                    if (localAddress) {
-                        // Remove old marker
-                        const oldMarker = this.markers.get(address.id);
-                        if (oldMarker) {
-                            this.map.removeLayer(oldMarker);
-                        }
-                        
-                        // Add new optimized marker with enhanced styling
-                        this.addOptimizedAddressToMap(localAddress, deliveryTourNumber, color, stopIndex + 1);
-                    }
-                });
-                
-                deliveryTourNumber++;
-            }
+            // Create route coordinates
+            const routeCoords = [
+                [this.hqLocation.lat, this.hqLocation.lng], // Start at HQ
+                ...tour.addresses.map(addr => [addr.lat, addr.lng]),
+                [this.hqLocation.lat, this.hqLocation.lng]  // Return to HQ
+            ];
+            
+            // Create polyline
+            const routeLine = L.polyline(routeCoords, {
+                color: color,
+                weight: 4,
+                opacity: 0.7
+            }).addTo(this.map);
+            
+            this.routeLines.push(routeLine);
+            
+            // Update markers with tour-specific styling
+            tour.addresses.forEach((address) => {
+                const oldMarker = this.markers.get(address.id);
+                if (oldMarker) {
+                    this.map.removeLayer(oldMarker);
+                }
+                this.addAddressToMap(address);
+            });
         });
-    }
-    
-    addRefillStopIndicator(tour, index) {
-        if (!this.serverInfo) return;
-        
-        const hq = this.serverInfo.hq_location;
-        const refillIcon = L.divIcon({
-            html: '<div class="refill-indicator">⛽</div>',
-            className: 'custom-refill-indicator',
-            iconSize: [30, 30],
-            iconAnchor: [15, 15]
-        });
-        
-        const refillMarker = L.marker([hq.lat, hq.lon], { icon: refillIcon })
-            .bindPopup(`<strong>HQ Refill Stop</strong><br>Refill bottles for next tour<br><em>Duration: 15 minutes</em>`)
-            .addTo(this.map);
-        
-        this.routeLines.push(refillMarker);
-        
-        // Add animated pulse effect
-        setTimeout(() => {
-            if (refillMarker._icon) {
-                refillMarker._icon.classList.add('refill-pulse');
-            }
-        }, 500);
-    }
-    
-    calculateMidpoint(coordinates) {
-        if (coordinates.length < 2) return coordinates[0];
-        
-        const midIndex = Math.floor(coordinates.length / 2);
-        return coordinates[midIndex];
-    }
-    
-    addOptimizedAddressToMap(address, tourNumber, tourColor, stopOrder) {
-        if (!address.lat || !address.lon) return;
-        
-        // Create priority-based icon styling
-        let priorityClass = 'priority-standard';
-        let prioritySymbol = '●';
-        
-        if (address.priority === 1) {
-            priorityClass = 'priority-high';
-            prioritySymbol = '🔴';
-        } else if (address.priority === 2) {
-            priorityClass = 'priority-medium'; 
-            prioritySymbol = '🟡';
-        } else if (address.priority === 3) {
-            priorityClass = 'priority-low';
-            prioritySymbol = '🟢';
-        }
-        
-        const markerIcon = L.divIcon({
-            html: `
-                <div class="optimized-marker ${priorityClass}" style="border-color: ${tourColor}">
-                    <span class="stop-number">${stopOrder}</span>
-                    <span class="priority-indicator">${prioritySymbol}</span>
-                </div>
-            `,
-            className: 'custom-optimized-marker',
-            iconSize: [35, 35],
-            iconAnchor: [17, 17]
-        });
-        
-        const marker = L.marker([address.lat, address.lon], { icon: markerIcon })
-            .bindPopup(`
-                <div class="marker-popup">
-                    <strong>Tour ${tourNumber} - Stop ${stopOrder}</strong><br>
-                    <strong>${address.delivery_id}</strong><br>
-                    ${address.address}<br>
-                    <strong>Bottles:</strong> ${address.bottles}<br>
-                    ${address.priority ? `<strong>Priority:</strong> ${this.getPriorityLabel(address.priority)}` : ''}
-                </div>
-            `)
-            .addTo(this.map);
-        
-        this.markers.set(address.id, marker);
     }
 
     clearRouteLines() {
@@ -588,15 +553,15 @@ class RouteOptimizerApp {
         const addressCount = document.getElementById('addressCount');
         
         listContainer.innerHTML = '';
-        addressCount.textContent = this.addresses.size;
+        addressCount.textContent = this.addresses.length;
         
-        if (this.addresses.size === 0) {
+        if (this.addresses.length === 0) {
             listContainer.innerHTML = '<p class="help-text">No addresses added yet</p>';
             return;
         }
         
         // Sort addresses by tour and order if optimized
-        const sortedAddresses = Array.from(this.addresses.values()).sort((a, b) => {
+        const sortedAddresses = [...this.addresses].sort((a, b) => {
             if (a.optimized && b.optimized) {
                 if (a.tour_number !== b.tour_number) {
                     return a.tour_number - b.tour_number;
@@ -636,7 +601,7 @@ class RouteOptimizerApp {
                 ${address.optimized ? `<br><strong>Stop Order:</strong> ${address.stop_order}` : ''}
             </div>
             <div class="address-actions">
-                <button class="btn btn-danger btn-sm" onclick="app.removeAddress('${address.id}')">Remove</button>
+                <button class="btn btn-outline btn-sm" onclick="app.removeAddress(${address.id})">Remove</button>
             </div>
         `;
         
@@ -644,15 +609,15 @@ class RouteOptimizerApp {
     }
 
     updateStatistics() {
-        const totalBottles = Array.from(this.addresses.values()).reduce((sum, addr) => sum + addr.bottles, 0);
+        const totalBottles = this.addresses.reduce((sum, addr) => sum + (addr.bottles || 0), 0);
         const estimatedTours = Math.max(1, Math.ceil(totalBottles / 80));
         
         document.getElementById('totalBottles').textContent = totalBottles;
         document.getElementById('estimatedTours').textContent = estimatedTours;
         
         const statsElement = document.getElementById('statistics');
-        if (this.addresses.size > 0) {
-            statsElement.style.display = 'grid';
+        if (this.addresses.length > 0) {
+            statsElement.style.display = 'flex';
         } else {
             statsElement.style.display = 'none';
         }
@@ -691,39 +656,20 @@ class RouteOptimizerApp {
         exportSection.style.display = 'block';
     }
 
-    async exportTourToGoogleMaps(tourId) {
-        try {
-            const response = await fetch(`${this.apiBase}/export/googlemaps/${tourId}`);
-            const data = await response.json();
-            
-            if (!response.ok) {
-                throw new Error(data.detail || 'Failed to generate export URLs');
-            }
-            
-            // Detect platform and open appropriate URL
-            this.openGoogleMapsUrl(data.urls, `Tour ${tourId}`);
-            
-        } catch (error) {
-            console.error('Error exporting to Google Maps:', error);
-            this.showError(error.message);
-        }
-    }
-
     async exportAllToursToGoogleMaps() {
         try {
             // Export each tour sequentially with delay to avoid overwhelming
             for (let i = 0; i < this.optimizedTours.length; i++) {
                 const tour = this.optimizedTours[i];
-                await this.exportTourToGoogleMaps(tour.id);
+                this.exportTourToGoogleMaps(tour.id);
                 
                 // Add delay between exports (except for last one)
                 if (i < this.optimizedTours.length - 1) {
-                    await new Promise(resolve => setTimeout(resolve, 1500));
+                    await new Promise(resolve => setTimeout(resolve, 2000));
                 }
             }
             
             console.log(`📍 Exported all ${this.optimizedTours.length} tours to Google Maps`);
-            this.showSuccess(`Successfully exported all ${this.optimizedTours.length} tours to Google Maps!`);
             
         } catch (error) {
             console.error('Error exporting all tours:', error);
@@ -731,26 +677,55 @@ class RouteOptimizerApp {
         }
     }
 
-    openGoogleMapsUrl(urls, tourName) {
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-        const isAndroid = /Android/.test(navigator.userAgent);
-        
-        if (isIOS) {
-            // Try Google Maps app first, fallback to Apple Maps
-            window.open(urls.ios_google_maps, '_blank');
-            setTimeout(() => {
-                if (urls.ios_apple_maps) {
-                    window.open(urls.ios_apple_maps, '_blank');
-                }
-            }, 1000);
-        } else if (isAndroid) {
-            window.open(urls.android, '_blank');
-        } else {
-            // Desktop - open web version
-            window.open(urls.web, '_blank');
+    exportTourToGoogleMaps(tourId) {
+        try {
+            const tour = this.optimizedTours.find(t => t.id === tourId);
+            if (!tour) return;
+
+            // Create comprehensive route including HQ as start and end
+            const waypoints = [
+                encodeURIComponent(this.hqLocation.address), // Start at HQ
+                ...tour.addresses.map(addr => encodeURIComponent(addr.address)), // All delivery stops
+                encodeURIComponent(this.hqLocation.address)  // Return to HQ
+            ];
+
+            // Detect platform and create appropriate URLs
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+            const isAndroid = /Android/.test(navigator.userAgent);
+            
+            let primaryUrl, fallbackUrl;
+
+            if (isIOS) {
+                // iOS: Try Google Maps app first, then Apple Maps
+                primaryUrl = `comgooglemaps://?saddr=${waypoints[0]}&daddr=${waypoints[waypoints.length - 1]}&waypoints=${waypoints.slice(1, -1).join('|')}`;
+                fallbackUrl = `http://maps.apple.com/?saddr=${waypoints[0]}&daddr=${waypoints[waypoints.length - 1]}`;
+                
+                // Try Google Maps app first
+                window.location.href = primaryUrl;
+                
+                // Fallback to Apple Maps after a delay
+                setTimeout(() => {
+                    window.open(fallbackUrl, '_blank');
+                }, 1500);
+                
+            } else if (isAndroid) {
+                // Android: Google Maps app
+                primaryUrl = `https://www.google.com/maps/dir/${waypoints.join('/')}`;
+                window.open(primaryUrl, '_blank');
+                
+            } else {
+                // Desktop: Web Google Maps with optimized route
+                primaryUrl = `https://www.google.com/maps/dir/${waypoints.join('/')}`;
+                window.open(primaryUrl, '_blank');
+            }
+            
+            console.log(`📍 Exported Tour ${tourId} to Google Maps (${tour.addresses.length} stops)`);
+            this.showSuccess(`Tour ${tourId} exported to Google Maps with ${tour.addresses.length} stops!`);
+            
+        } catch (error) {
+            console.error('Error exporting to Google Maps:', error);
+            this.showError('Failed to export to Google Maps');
         }
-        
-        console.log(`📍 Exported ${tourName} to Google Maps`);
     }
 
     fitMapToMarkers() {
@@ -764,18 +739,26 @@ class RouteOptimizerApp {
     }
 
     resetMapView() {
-        if (!this.serverInfo) return;
-        const hq = this.serverInfo.hq_location;
-        this.map.setView([hq.lat, hq.lon], 10);
+        this.map.setView([this.hqLocation.lat, this.hqLocation.lng], 10);
     }
 
     showLoading(show) {
         const overlay = document.getElementById('loadingOverlay');
         if (show) {
-            overlay.classList.add('show');
+            overlay.style.display = 'flex';
         } else {
-            overlay.classList.remove('show');
+            overlay.style.display = 'none';
         }
+    }
+
+    showError(message) {
+        alert(`Error: ${message}`);
+        console.error('Error:', message);
+    }
+
+    showSuccess(message) {
+        alert(`Success: ${message}`);
+        console.log('Success:', message);
     }
 
     async uploadFile(file) {
@@ -796,28 +779,14 @@ class RouteOptimizerApp {
 
         // Show progress
         this.showUploadProgress(true);
-        this.updateUploadStatus('Uploading file...');
+        this.updateUploadStatus('Reading file...');
 
         try {
-            const formData = new FormData();
-            formData.append('file', file);
-
-            const response = await fetch(`${this.apiBase}/upload`, {
-                method: 'POST',
-                body: formData
-            });
-
-            const result = await response.json();
-
-            if (!response.ok) {
-                throw new Error(result.detail?.message || result.detail || 'Upload failed');
-            }
-
-            // Show success results
-            this.showUploadResults(result, true);
+            const data = await this.readFile(file);
+            this.updateUploadStatus('Processing addresses...');
             
-            // Refresh addresses and map
-            await this.loadExistingAddresses();
+            const result = await this.processFileData(data);
+            this.showUploadResults(result, true);
             
             // Reset file input
             document.getElementById('fileInput').value = '';
@@ -830,14 +799,174 @@ class RouteOptimizerApp {
         }
     }
 
+    readFile(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            
+            reader.onload = (e) => {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    // Get first worksheet
+                    const sheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[sheetName];
+                    
+                    // Convert to JSON
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                    resolve(jsonData);
+                } catch (error) {
+                    reject(new Error('Failed to read file. Please check the format.'));
+                }
+            };
+            
+            reader.onerror = () => reject(new Error('Failed to read file'));
+            reader.readAsArrayBuffer(file);
+        });
+    }
+
+    async processFileData(rows) {
+        const result = {
+            total_rows: rows.length - 1, // Exclude header
+            addresses_added: 0,
+            addresses_failed: 0,
+            geocoded_count: 0,
+            warnings: [],
+            failed_addresses: []
+        };
+
+        if (rows.length < 2) {
+            throw new Error('File is empty or has no data rows');
+        }
+
+        // Expected headers: Address, DeliveryID, Bottles, Priority
+        const headers = rows[0].map(h => h?.toString().toLowerCase());
+        const addressCol = headers.findIndex(h => h?.includes('address'));
+        const deliveryIdCol = headers.findIndex(h => h?.includes('delivery') || h?.includes('id'));
+        const bottlesCol = headers.findIndex(h => h?.includes('bottle'));
+        const priorityCol = headers.findIndex(h => h?.includes('priority'));
+
+        if (addressCol === -1) {
+            throw new Error('Address column not found. Expected column with "address" in the name.');
+        }
+
+        const dataRows = rows.slice(1);
+        let successCount = 0;
+
+        for (let i = 0; i < dataRows.length; i++) {
+            const row = dataRows[i];
+            const rowNum = i + 2; // Excel row number (header is row 1)
+
+            try {
+                if (!row[addressCol] || row[addressCol].toString().trim() === '') {
+                    result.warnings.push(`Row ${rowNum}: Empty address field, skipping`);
+                    continue;
+                }
+
+                const addressData = {
+                    address: row[addressCol].toString().trim(),
+                    delivery_id: deliveryIdCol >= 0 && row[deliveryIdCol] ? 
+                        row[deliveryIdCol].toString().trim() : this.generateDeliveryId(),
+                    bottles: bottlesCol >= 0 && row[bottlesCol] ? 
+                        parseInt(row[bottlesCol]) || 0 : 0,
+                    priority: priorityCol >= 0 && row[priorityCol] ? 
+                        parseInt(row[priorityCol]) || null : null
+                };
+
+                // Geocode address
+                this.updateUploadStatus(`Geocoding address ${successCount + 1}/${dataRows.length}...`);
+                
+                const coordinates = await this.geocodeAddress(addressData.address);
+                
+                const newAddress = {
+                    id: this.nextId++,
+                    ...addressData,
+                    lat: coordinates.lat,
+                    lng: coordinates.lng,
+                    timestamp: new Date().toISOString(),
+                    optimized: false
+                };
+
+                this.addresses.push(newAddress);
+                this.addAddressToMap(newAddress);
+                
+                result.addresses_added++;
+                result.geocoded_count++;
+                successCount++;
+
+                // Small delay to avoid overwhelming the geocoding service
+                if (successCount % 5 === 0) {
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+
+            } catch (error) {
+                result.addresses_failed++;
+                result.failed_addresses.push({
+                    row: rowNum,
+                    data: { address: row[addressCol] },
+                    error: error.message
+                });
+            }
+        }
+
+        // Save to localStorage and update UI
+        this.saveToLocalStorage();
+        this.updateAddressList();
+        this.updateStatistics();
+        
+        if (result.addresses_added > 0) {
+            setTimeout(() => this.fitMapToMarkers(), 500);
+        }
+
+        return result;
+    }
+
     downloadSampleFile(format) {
-        const url = `${this.apiBase}/sample-file/${format}`;
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `aboutwater_sample_addresses.${format === 'excel' ? 'xlsx' : 'csv'}`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        // Create sample data
+        const sampleData = [
+            ['Address', 'DeliveryID', 'Bottles', 'Priority'],
+            ['München, Deutschland', 'AW-001', '20', '1'],
+            ['Berlin, Deutschland', 'AW-002', '15', '2'],
+            ['Hamburg, Deutschland', 'AW-003', '25', '3'],
+            ['Frankfurt am Main, Deutschland', '', '30', '']
+        ];
+
+        if (format === 'excel') {
+            // Create Excel workbook
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(sampleData);
+            
+            // Set column widths
+            ws['!cols'] = [
+                { wch: 30 }, // Address
+                { wch: 15 }, // DeliveryID
+                { wch: 10 }, // Bottles
+                { wch: 12 }  // Priority
+            ];
+            
+            XLSX.utils.book_append_sheet(wb, ws, 'Addresses');
+            XLSX.writeFile(wb, 'aboutwater_sample_addresses.xlsx');
+        } else {
+            // Create CSV
+            const csvContent = sampleData.map(row => 
+                row.map(cell => `"${cell}"`).join(',')
+            ).join('\n');
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', 'aboutwater_sample_addresses.csv');
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+        
+        console.log(`📄 Downloaded ${format.toUpperCase()} sample file`);
     }
 
     showUploadProgress(show) {
@@ -896,7 +1025,7 @@ class RouteOptimizerApp {
                 errorsDiv.innerHTML = `
                     <h4>❌ Failed Addresses:</h4>
                     <ul>${result.failed_addresses.map(f => 
-                        `<li><strong>${f.data.address || 'Unknown'}:</strong> ${f.error}</li>`
+                        `<li><strong>Row ${f.row}:</strong> ${f.error}</li>`
                     ).join('')}</ul>
                 `;
             } else {
@@ -920,16 +1049,6 @@ class RouteOptimizerApp {
                 resultsDiv.style.display = 'none';
             }, 10000);
         }
-    }
-
-    showError(message) {
-        // Simple error display - could be enhanced with toast notifications
-        alert(`Error: ${message}`);
-    }
-
-    showSuccess(message) {
-        // Simple success display - could be enhanced with toast notifications
-        alert(`Success: ${message}`);
     }
 }
 

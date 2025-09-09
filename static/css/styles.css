@@ -879,3 +879,124 @@ input:hover, select:hover, textarea:hover {
     transform: translateY(-1px);
     box-shadow: var(--shadow);
 }
+
+/* Upload Area Styles */
+.upload-area {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 2rem;
+    text-align: center;
+    background: var(--surface-accent);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 1rem;
+}
+
+.upload-area:hover, .upload-area.dragover {
+    border-color: var(--accent-color);
+    background: #f0f9ff;
+}
+
+.upload-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.upload-icon {
+    font-size: 2rem;
+    opacity: 0.6;
+}
+
+.upload-text {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.upload-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+}
+
+/* Upload Progress */
+.upload-progress {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: var(--surface-accent);
+    border-radius: var(--radius);
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-color), var(--success-color));
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+/* Upload Results */
+.upload-results {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: var(--radius);
+    background: var(--surface-accent);
+}
+
+.upload-summary {
+    padding: 0.75rem;
+    border-radius: var(--radius);
+    background: #dcfce7;
+    border: 1px solid #bbf7d0;
+    color: #166534;
+    margin-bottom: 0.75rem;
+}
+
+.upload-summary.error {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #dc2626;
+}
+
+.upload-warnings, .upload-errors {
+    padding: 0.75rem;
+    border-radius: var(--radius);
+    margin-top: 0.75rem;
+}
+
+.upload-warnings {
+    background: #fef3c7;
+    border: 1px solid #fed7aa;
+    color: #92400e;
+}
+
+.upload-errors {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #dc2626;
+}
+
+.upload-warnings h4, .upload-errors h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: var(--font-size-base);
+}
+
+.upload-warnings ul, .upload-errors ul {
+    margin: 0;
+    padding-left: 1.25rem;
+}
+
+.upload-warnings li, .upload-errors li {
+    margin-bottom: 0.25rem;
+}

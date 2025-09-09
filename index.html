@@ -93,6 +93,43 @@
                 </div>
             </section>
 
+            <!-- File Import -->
+            <section class="card">
+                <h3>Import Addresses</h3>
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-content">
+                        <div class="upload-icon">📁</div>
+                        <p><strong>Drop Excel/CSV file here</strong></p>
+                        <p class="upload-text">or click to browse</p>
+                        <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" style="display: none;">
+                    </div>
+                </div>
+                
+                <div class="upload-actions">
+                    <button id="downloadExcelBtn" class="btn btn-outline btn-sm">
+                        📄 Download Excel Template
+                    </button>
+                    <button id="downloadCsvBtn" class="btn btn-outline btn-sm">
+                        📄 Download CSV Template
+                    </button>
+                </div>
+
+                <!-- Upload Progress -->
+                <div id="uploadProgress" class="upload-progress" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                    <p id="uploadStatus">Uploading...</p>
+                </div>
+
+                <!-- Upload Results -->
+                <div id="uploadResults" class="upload-results" style="display: none;">
+                    <div id="uploadSummary" class="upload-summary"></div>
+                    <div id="uploadWarnings" class="upload-warnings" style="display: none;"></div>
+                    <div id="uploadErrors" class="upload-errors" style="display: none;"></div>
+                </div>
+            </section>
+
             <!-- Actions -->
             <section class="card">
                 <button id="optimizeBtn" class="btn btn-success btn-large">
@@ -139,6 +176,9 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
             crossorigin=""></script>
+    
+    <!-- SheetJS for Excel/CSV parsing -->
+    <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     
     <script src="static/js/app.js"></script>
 </body>
