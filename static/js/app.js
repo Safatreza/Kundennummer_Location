@@ -8,9 +8,12 @@ class RouteOptimizerApp {
         this.map = null;
         this.markers = new Map();
         this.routeLines = [];
-        this.addresses = JSON.parse(localStorage.getItem('aboutwater_addresses') || '[]');
+        // Clear any pre-existing addresses - start fresh
+        localStorage.removeItem('aboutwater_addresses');
+        localStorage.removeItem('aboutwater_next_id');
+        this.addresses = [];
         this.optimizedTours = [];
-        this.nextId = parseInt(localStorage.getItem('aboutwater_next_id') || '1');
+        this.nextId = 1;
         
         // Static HQ location (aboutwater HQ - Munich area)
         this.hqLocation = {

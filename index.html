@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>aboutwater Route Optimizer</title>
     
+    <!-- Google Fonts - ASAP -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=ASAP:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
           integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
@@ -17,8 +22,13 @@
     <header class="header">
         <div class="header-content">
             <div class="brand-section">
-                <h1>aboutwater Route Optimizer</h1>
-                <p class="brand-tagline">Professional Route Optimization System</p>
+                <div class="brand-logo-section">
+                    <img src="./logo.png" alt="aboutwater logo" class="brand-logo" onerror="this.style.display='none'; console.log('Logo failed to load');" onload="console.log('Logo loaded successfully');">
+                    <div class="brand-text">
+                        <h1>aboutwater Route Optimizer</h1>
+                        <p class="brand-tagline">making water your water</p>
+                    </div>
+                </div>
             </div>
             <div class="server-info">
                 <span class="server-id">Server: STATIC</span>
