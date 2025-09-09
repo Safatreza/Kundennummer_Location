@@ -1,6 +1,0 @@
-kundennummer,adresse,priority,bottles,is_depot
-HQ,Planegg, Deutschland,0,0,true
-K001,München, Deutschland,1,10,false
-K002,Augsburg, Deutschland,2,15,false
-K003,Starnberg, Deutschland,1,8,false
-K004,Gauting, Deutschland,3,12,false

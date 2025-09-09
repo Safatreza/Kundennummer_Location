@@ -3,145 +3,195 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Route Optimization System for AboutWater GmbH - Optimize delivery routes with interactive maps">
-    <meta name="keywords" content="route optimization, delivery planning, logistics, AboutWater GmbH">
-    <meta name="author" content="AboutWater GmbH">
-    <meta name="robots" content="index, follow">
-    
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://route-optimizer.vercel.app/">
-    <meta property="og:title" content="Route Optimizer - AboutWater GmbH">
-    <meta property="og:description" content="Professional route optimization system for delivery planning">
-    
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://route-optimizer.vercel.app/">
-    <meta property="twitter:title" content="Route Optimizer - AboutWater GmbH">
-    <meta property="twitter:description" content="Professional route optimization system for delivery planning">
-    
-    <title>Route Optimizer - AboutWater GmbH</title>
-    
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <title>{{ app_name }}</title>
     
     <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
           crossorigin=""/>
     
-    <!-- Custom CSS -->
     <link rel="stylesheet" href="/static/css/styles.css">
-    
-    <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
 </head>
 <body>
-    <div class="container-fluid">
-        <h1 class="text-center my-4">AboutWater GmbH - Route Optimizer</h1>
-        
-        <div class="row">
-            <!-- Left Panel -->
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header">
-                        <h5>Add Customer Location</h5>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="brand-section">
+                <h1>{{ app_name }}</h1>
+                <p class="brand-tagline">Professional Route Optimization System</p>
+            </div>
+            <div class="server-info">
+                <span class="server-id">Server: {{ server_id }}</span>
+                <span class="version">v{{ version }}</span>
+                <span class="status-indicator">●</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <!-- Address Form -->
+            <section class="card">
+                <h3>Add Address</h3>
+                <form id="addressForm">
+                    <div class="form-group">
+                        <label for="address">Address *</label>
+                        <input type="text" id="address" name="address" required 
+                               placeholder="e.g. München, Deutschland">
                     </div>
-                    <div class="card-body">
-                        <!-- Manual Entry Form -->
-                        <form id="addressForm">
-                            <div class="mb-3">
-                                <label for="kundennummer" class="form-label">Customer Number (optional)</label>
-                                <input type="text" id="kundennummer" class="form-control" placeholder="e.g. K001">
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="address" class="form-label">Address *</label>
-                                <input type="text" id="address" class="form-control" placeholder="e.g. München, Deutschland" required>
-                            </div>
-                            
-                            <div class="row">
-                                <div class="col-6">
-                                    <label for="priority" class="form-label">Priority</label>
-                                    <select id="priority" class="form-select">
-                                        <option value="">None</option>
-                                        <option value="1">Low (1)</option>
-                                        <option value="2">Medium (2)</option>
-                                        <option value="3">High (3)</option>
-                                        <option value="4">Critical (4)</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="col-6">
-                                    <label for="bottles" class="form-label">Bottles</label>
-                                    <input type="number" id="bottles" class="form-control" placeholder="0" min="0" value="0">
-                                </div>
-                            </div>
-                            
-                            <button type="submit" class="btn btn-primary w-100 mt-3">Add to Map</button>
-                        </form>
-                        
-                        <!-- CSV Upload -->
-                        <hr>
-                        <h6>CSV Import</h6>
-                        <form id="fileForm">
-                            <input type="file" id="fileInput" accept=".csv" class="form-control mb-2">
-                            <div class="progress mb-2">
-                                <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%;"></div>
-                            </div>
-                            <div id="status" class="small text-muted">Ready</div>
-                        </form>
-                        
-                        <!-- Control Buttons -->
-                        <hr>
-                        <div class="d-grid gap-2">
-                            <button type="button" id="optimizeRouteBtn" class="btn btn-success">Optimize Route</button>
-                            <button type="button" id="exportToGoogleMapsBtn" class="btn btn-info">Export to Google Maps</button>
-                            <button type="button" id="clearAllLocationsBtn" class="btn btn-danger">Clear All</button>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="deliveryId">Delivery ID</label>
+                            <input type="text" id="deliveryId" name="deliveryId" 
+                                   placeholder="Auto-generated">
+                        </div>
+                        <div class="form-group">
+                            <label for="bottles">Bottles</label>
+                            <input type="number" id="bottles" name="bottles" 
+                                   min="0" max="80" value="0">
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- Right Panel - Map -->
-            <div class="col-md-8">
-                <div class="card">
-                    <div class="card-header">
-                        <h5>Interactive Map</h5>
+                    <div class="form-group">
+                        <label for="priority">Priority</label>
+                        <select id="priority" name="priority">
+                            <option value="">Standard</option>
+                            <option value="1">High (1)</option>
+                            <option value="2">Medium (2)</option>
+                            <option value="3">Low (3)</option>
+                        </select>
                     </div>
-                    <div class="card-body p-0">
-                        <div id="map"></div>
+
+                    <button type="submit" class="btn btn-primary">Add Address</button>
+                </form>
+            </section>
+
+            <!-- File Upload Section -->
+            <section class="card">
+                <h3>Bulk Upload</h3>
+                
+                <!-- Sample Files -->
+                <div class="sample-files" style="margin-bottom: 1rem;">
+                    <p class="help-text">Download sample file to see the format:</p>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button type="button" id="downloadExcelBtn" class="btn btn-outline btn-sm">
+                            Sample Excel
+                        </button>
+                        <button type="button" id="downloadCsvBtn" class="btn btn-outline btn-sm">
+                            Sample CSV
+                        </button>
                     </div>
                 </div>
-                
-                <!-- Route Info Panel -->
-                <div class="card mt-3" id="routeInfoPanel" style="display: none;">
-                    <div class="card-header">
-                        <h5>Route Information</h5>
+
+                <!-- File Upload -->
+                <div class="upload-area" id="uploadArea">
+                    <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" style="display: none;">
+                    <div class="upload-icon">📁</div>
+                    <div class="upload-text">
+                        <strong>Click to upload Excel/CSV file</strong>
+                        <p>Supports .xlsx, .xls, .csv files (max 10MB)</p>
                     </div>
-                    <div class="card-body">
-                        <div id="routeDetails"></div>
+                    <div class="upload-formats">
+                        <strong>Expected columns:</strong>
+                        <ul>
+                            <li><strong>Address</strong> (required) - Full delivery address</li>
+                            <li><strong>Delivery_ID</strong> (optional) - Customer identifier</li>
+                            <li><strong>Bottles</strong> (optional) - Number of bottles (0-80)</li>
+                            <li><strong>Priority</strong> (optional) - High/Medium/Low or 1/2/3</li>
+                        </ul>
                     </div>
                 </div>
+
+                <!-- Upload Progress -->
+                <div id="uploadProgress" class="upload-progress" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                    <p id="uploadStatus">Processing file...</p>
+                </div>
+
+                <!-- Upload Results -->
+                <div id="uploadResults" class="upload-results" style="display: none;">
+                    <div id="uploadSummary" class="upload-summary"></div>
+                    <div id="uploadWarnings" class="upload-warnings" style="display: none;"></div>
+                    <div id="uploadErrors" class="upload-errors" style="display: none;"></div>
+                </div>
+            </section>
+
+            <!-- Address List -->
+            <section class="card">
+                <div class="card-header">
+                    <h3>Addresses (<span id="addressCount">0</span>)</h3>
+                    <button id="clearAllBtn" class="btn btn-outline btn-sm">Clear All</button>
+                </div>
                 
-                <!-- Info -->
-                <div class="alert alert-info mt-3">
-                    <strong>Note:</strong> Planegg is always the start and end point (HQ/Depot). 
-                    The algorithm optimizes using nearest neighbor approach.
+                <div id="addressList" class="address-list">
+                    <!-- Addresses will be populated here -->
+                </div>
+
+                <!-- Statistics -->
+                <div id="statistics" class="statistics" style="display: none;">
+                    <div class="stat">
+                        <div class="stat-value" id="totalBottles">0</div>
+                        <div class="stat-label">Total Bottles</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="estimatedTours">0</div>
+                        <div class="stat-label">Est. Tours</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Actions -->
+            <section class="card">
+                <button id="optimizeBtn" class="btn btn-success btn-large">
+                    Optimize Routes
+                </button>
+                
+                <div id="exportSection" style="display: none; margin-top: 1rem;">
+                    <div class="export-tours" id="exportTours">
+                        <!-- Export buttons will be populated here -->
+                    </div>
+                    <p class="help-text">Export optimized routes to Google Maps</p>
+                </div>
+            </section>
+        </aside>
+
+        <!-- Map Panel -->
+        <main class="map-panel">
+            <div class="map-header">
+                <h2>Route Map</h2>
+                <div class="map-controls">
+                    <button id="fitMapBtn" class="btn btn-outline btn-sm">Fit All</button>
+                    <button id="resetMapBtn" class="btn btn-outline btn-sm">Reset</button>
                 </div>
             </div>
+            
+            <div id="map" class="map">
+                <div class="map-loading">
+                    <div class="spinner"></div>
+                    <p>Loading map...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p>Processing...</p>
         </div>
     </div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
-    
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
             crossorigin=""></script>
-            
-    <!-- Custom JS -->
-    <script src="/static/js/app_fixed.js"></script>
+    
+    <script src="/static/js/app.js"></script>
 </body>
 </html>
