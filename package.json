@@ -1,0 +1,43 @@
+{
+  "name": "aboutwater-route-optimizer",
+  "version": "3.0.1",
+  "description": "aboutwater Route Optimizer - Professional route optimization system for water bottle deliveries",
+  "main": "main.py",
+  "type": "module",
+  "scripts": {
+    "build": "echo 'No build step required for FastAPI static assets'",
+    "start": "python main.py",
+    "dev": "python start_server.py",
+    "test": "python test_optimization.py"
+  },
+  "keywords": [
+    "route-optimization",
+    "fastapi",
+    "logistics",
+    "delivery",
+    "maps",
+    "aboutwater"
+  ],
+  "author": "aboutwater GmbH",
+  "license": "Proprietary",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Safatreza/Kundennummer_Location.git"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "python": ">=3.9"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "browserslist": [
+    "> 1%",
+    "last 2 versions"
+  ],
+  "vercel": {
+    "framework": null,
+    "buildCommand": null,
+    "outputDirectory": null,
+    "installCommand": null
+  }
+}
