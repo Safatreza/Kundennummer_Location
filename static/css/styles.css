@@ -85,6 +85,7 @@ body {
 }
 
 .brand-logo {
+    position: relative;
     height: 45px;
     width: 45px;
     min-height: 45px;
@@ -100,6 +101,20 @@ body {
     opacity: 1 !important;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     flex-shrink: 0;
+}
+
+/* Fallback for logo loading issues */
+.brand-logo::before {
+    content: "💧";
+    display: block;
+    text-align: center;
+    font-size: 24px;
+    line-height: 1;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: -1;
 }
 
 .brand-logo:hover {

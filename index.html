@@ -23,7 +23,9 @@
         <div class="header-content">
             <div class="brand-section">
                 <div class="brand-logo-section">
-                    <img src="./logo.png" alt="aboutwater logo" class="brand-logo" onerror="this.style.display='none'; console.log('Logo failed to load');" onload="console.log('Logo loaded successfully');">
+                    <img src="logo.png" alt="aboutwater logo" class="brand-logo" 
+                         onerror="this.onerror=null; this.src='./logo.png'; if(this.src.includes('./logo.png')) this.style.display='none';" 
+                         onload="console.log('Logo loaded successfully');">
                     <div class="brand-text">
                         <h1>aboutwater Route Optimizer</h1>
                         <p class="brand-tagline">making water your water</p>
