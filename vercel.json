@@ -1,18 +1,9 @@
 {
   "version": 2,
   "name": "aboutwater-route-optimizer",
-  "framework": null,
   "builds": [
     {
-      "src": "main.py",
-      "use": "@vercel/python"
-    },
-    {
-      "src": "static/**/*",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "templates/**/*",
+      "src": "**",
       "use": "@vercel/static"
     }
   ],
@@ -22,35 +13,12 @@
       "dest": "/static/$1"
     },
     {
-      "src": "/api/(.*)",
-      "dest": "/main.py"
-    },
-    {
-      "src": "/server-info",
-      "dest": "/main.py"
-    },
-    {
       "src": "/",
-      "dest": "/main.py"
+      "dest": "/index.html"
     },
     {
       "src": "/(.*)",
-      "dest": "/main.py"
+      "dest": "/index.html"
     }
-  ],
-  "env": {
-    "ENVIRONMENT": "production",
-    "PYTHONPATH": ".",
-    "HOST": "0.0.0.0",
-    "PORT": "8000"
-  },
-  "functions": {
-    "main.py": {
-      "maxDuration": 30,
-      "runtime": "python3.9"
-    }
-  },
-  "installCommand": "pip install -r requirements.txt",
-  "buildCommand": null,
-  "outputDirectory": null
+  ]
 }

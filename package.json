@@ -2,21 +2,19 @@
   "name": "aboutwater-route-optimizer",
   "version": "3.0.1",
   "description": "aboutwater Route Optimizer - Professional route optimization system for water bottle deliveries",
-  "main": "main.py",
-  "type": "module",
+  "main": "index.html",
   "scripts": {
-    "build": "echo 'No build step required for FastAPI static assets'",
-    "start": "python main.py",
-    "dev": "python start_server.py",
-    "test": "python test_optimization.py"
+    "build": "echo 'Static site - no build required'",
+    "start": "serve -s .",
+    "dev": "serve -s ."
   },
   "keywords": [
     "route-optimization",
-    "fastapi",
     "logistics",
     "delivery",
     "maps",
-    "aboutwater"
+    "aboutwater",
+    "static-site"
   ],
   "author": "aboutwater GmbH",
   "license": "Proprietary",
@@ -25,19 +23,14 @@
     "url": "https://github.com/Safatreza/Kundennummer_Location.git"
   },
   "engines": {
-    "node": ">=18.0.0",
-    "python": ">=3.9"
+    "node": ">=18.0.0"
   },
-  "dependencies": {},
+  "dependencies": {
+    "serve": "^14.2.0"
+  },
   "devDependencies": {},
   "browserslist": [
     "> 1%",
     "last 2 versions"
-  ],
-  "vercel": {
-    "framework": null,
-    "buildCommand": null,
-    "outputDirectory": null,
-    "installCommand": null
-  }
+  ]
 }
