@@ -1,36 +1,106 @@
 {
-  "name": "aboutwater-route-optimizer",
-  "version": "3.0.1",
-  "description": "aboutwater Route Optimizer - Professional route optimization system for water bottle deliveries",
-  "main": "index.html",
+  "name": "@aboutwater/route-optimizer",
+  "version": "4.0.0",
+  "type": "module",
+  "description": "Enterprise-grade route optimization system for AboutWater delivery logistics",
   "scripts": {
-    "build": "echo 'Static site - no build required'",
-    "start": "serve -s .",
-    "dev": "serve -s ."
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint:fix": "eslint . --ext ts,tsx --fix",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
+  "dependencies": {
+    "@googlemaps/js-api-loader": "^1.16.2",
+    "@hookform/resolvers": "^3.3.1",
+    "@radix-ui/react-checkbox": "^1.0.4",
+    "@radix-ui/react-dialog": "^1.0.5",
+    "@radix-ui/react-dropdown-menu": "^2.0.6",
+    "@radix-ui/react-progress": "^1.0.3",
+    "@radix-ui/react-select": "^2.0.0",
+    "@radix-ui/react-toast": "^1.1.5",
+    "@radix-ui/react-tooltip": "^1.0.7",
+    "@tanstack/react-query": "^4.35.3",
+    "axios": "^1.5.1",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.0.0",
+    "cmdk": "^0.2.0",
+    "date-fns": "^2.30.0",
+    "framer-motion": "^10.16.4",
+    "idb": "^7.1.1",
+    "leaflet": "^1.9.4",
+    "lucide-react": "^0.284.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-dropzone": "^14.2.3",
+    "react-hook-form": "^7.47.0",
+    "react-hot-toast": "^2.6.0",
+    "react-hotkeys-hook": "^4.4.1",
+    "react-leaflet": "^4.2.1",
+    "react-router-dom": "^6.16.0",
+    "react-window": "^1.8.8",
+    "react-window-infinite-loader": "^1.0.9",
+    "tailwind-merge": "^1.14.0",
+    "tailwindcss-animate": "^1.0.7",
+    "workbox-sw": "^7.0.0",
+    "xlsx": "^0.18.5",
+    "zod": "^3.22.4",
+    "zustand": "^4.4.1"
+  },
+  "devDependencies": {
+    "@headlessui/react": "^1.7.17",
+    "@heroicons/react": "^2.0.18",
+    "@testing-library/jest-dom": "^6.1.4",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^14.5.1",
+    "@types/leaflet": "^1.9.8",
+    "@types/react": "^18.2.25",
+    "@types/react-dom": "^18.2.11",
+    "@types/react-window": "^1.8.6",
+    "@typescript-eslint/eslint-plugin": "^6.7.5",
+    "@typescript-eslint/parser": "^6.7.5",
+    "@vitejs/plugin-react-swc": "^3.4.0",
+    "@vitest/coverage-c8": "^0.33.0",
+    "@vitest/ui": "^0.34.6",
+    "autoprefixer": "^10.4.16",
+    "eslint": "^8.51.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.4",
+    "jsdom": "^22.1.0",
+    "postcss": "^8.4.31",
+    "prettier": "^3.0.3",
+    "tailwindcss": "^3.3.5",
+    "typescript": "^5.2.2",
+    "vite": "^4.4.11",
+    "vite-plugin-pwa": "^0.16.7",
+    "vitest": "^0.34.6"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@8.7.0",
   "keywords": [
     "route-optimization",
     "logistics",
     "delivery",
-    "maps",
     "aboutwater",
-    "static-site"
+    "react",
+    "typescript",
+    "vite",
+    "enterprise"
   ],
-  "author": "aboutwater GmbH",
+  "author": "AboutWater GmbH",
   "license": "Proprietary",
   "repository": {
     "type": "git",
     "url": "https://github.com/Safatreza/Kundennummer_Location.git"
   },
-  "engines": {
-    "node": ">=18.0.0"
-  },
-  "dependencies": {
-    "serve": "^14.2.0"
-  },
-  "devDependencies": {},
-  "browserslist": [
-    "> 1%",
-    "last 2 versions"
-  ]
+  "homepage": "https://aboutwater.vercel.app"
 }
