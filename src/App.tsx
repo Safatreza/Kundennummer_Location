@@ -244,13 +244,7 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div 
-        className="min-h-screen bg-cover bg-center bg-no-repeat relative"
-        style={{
-          backgroundImage: "url('/Background.jpg')",
-          backgroundAttachment: 'fixed'
-        }}
-      >
+      <div className="min-h-screen bg-gray-50 relative">
         {/* Subtle overlay for better contrast */}
         <div className="absolute inset-0 bg-white/5"></div>
         
