@@ -28,7 +28,7 @@ function App() {
 
   const handleOptimizeRoutes = async () => {
     if (addresses.length < 2) {
-      toast.error('Add at least 2 addresses to optimize routes')
+      toast.error('Need at least 2 addresses to optimize routes')
       return
     }
 
@@ -36,55 +36,20 @@ function App() {
     toast.loading('Optimizing routes...', { id: 'optimize' })
 
     try {
-      // Create tour optimizer instance
-      const optimizer = new TourOptimizer()
-      
-      // Convert addresses to the format expected by the optimizer
-      const deliveryAddresses = addresses.map(addr => ({
-        id: addr.id,
-        address: addr.address,
-        coordinates: addr.coordinates,
-        deliveryId: addr.deliveryId,
-        bottleCount: addr.bottleCount,
-        priority: 5, // Default priority
-        addressType: 'RESIDENTIAL' as const,
-        timeWindow: undefined,
-        customerNotes: undefined,
-        accessInstructions: undefined,
-        contactInfo: undefined
-      }))
+      const optimizer = new TourOptimizer({
+        maxVehicleCapacity: 80,
+        maxRouteDistance: 150,
+        maxRouteTime: 8 * 60,
+        vehicleSpeed: 30,
+      })
 
-      // Set optimization parameters
-      const params = {
-        algorithm: 'GENETIC' as const,
-        maxIterations: 1000,
-        populationSize: 50,
-        mutationRate: 0.1,
-        crossoverRate: 0.8,
-        elitismRate: 0.2,
-        convergenceThreshold: 0.001,
-        timeLimit: 30000, // 30 seconds
-        objectives: ['MINIMIZE_DISTANCE', 'MINIMIZE_TIME'] as const
-      }
-
-      // Perform optimization
-      const result = await optimizer.optimizeTour(deliveryAddresses, params)
+      const optimizedTours = await optimizer.optimizeRoutes(addresses)
       
-      if (result.success && result.tours) {
-        setOptimizedRoutes(result.tours)
-        toast.success(`Routes optimized! ${result.tours.length} optimal route(s) found`, { id: 'optimize' })
-        
-        // Log optimization results
-        const totalDistance = result.tours.reduce((sum, tour) => sum + tour.totalDistance, 0)
-        const totalTime = result.tours.reduce((sum, tour) => sum + tour.estimatedDuration, 0)
-        
-        toast.success(`Total distance: ${totalDistance.toFixed(2)}km, Estimated time: ${Math.round(totalTime/60)}min`)
-      } else {
-        throw new Error(result.error || 'Optimization failed')
-      }
+      setOptimizedRoutes(optimizedTours)
+      toast.success(`Successfully optimized into ${optimizedTours.length} route(s)!`, { id: 'optimize' })
     } catch (error) {
       console.error('Route optimization error:', error)
-      toast.error('Route optimization failed. Please try again.', { id: 'optimize' })
+      toast.error('Failed to optimize routes. Please try again.', { id: 'optimize' })
     } finally {
       setIsOptimizing(false)
     }
@@ -219,49 +184,31 @@ function App() {
 
   const handleExportToGoogleMaps = async () => {
     if (optimizedRoutes.length === 0) {
-      toast.error('Please optimize routes first before exporting')
+      toast.error('No optimized routes to export. Please optimize routes first.')
       return
     }
 
     try {
-      const result = await exportService.exportTours({
-        format: 'GOOGLE_MAPS',
-        tours: optimizedRoutes,
-        hqLocation: { lat: 48.1375, lng: 11.5755 },
-        includeMetadata: true,
-      })
-
-      if (result.success) {
-        toast.success(result.message)
-      } else {
-        throw new Error(result.message)
-      }
+      await exportService.exportToGoogleMaps(optimizedRoutes)
+      toast.success('Routes exported to Google Maps successfully!')
     } catch (error) {
-      toast.error('Failed to export to Google Maps')
+      console.error('Google Maps export error:', error)
+      toast.error('Failed to export to Google Maps. Please try again.')
     }
   }
 
   const handleExportToExcel = async () => {
     if (optimizedRoutes.length === 0) {
-      toast.error('Please optimize routes first before exporting')
+      toast.error('No optimized routes to export. Please optimize routes first.')
       return
     }
 
     try {
-      const result = await exportService.exportTours({
-        format: 'EXCEL',
-        tours: optimizedRoutes,
-        hqLocation: { lat: 48.1375, lng: 11.5755 },
-        includeMetadata: true,
-      })
-
-      if (result.success) {
-        toast.success(result.message)
-      } else {
-        throw new Error(result.message)
-      }
+      await exportService.exportToExcel(optimizedRoutes)
+      toast.success('Routes exported to Excel successfully!')
     } catch (error) {
-      toast.error('Failed to export to Excel')
+      console.error('Excel export error:', error)
+      toast.error('Failed to export to Excel. Please try again.')
     }
   }
 
@@ -349,11 +296,10 @@ function App() {
                 📍 Address Management
               </h2>
               
-              {/* Advanced Address Form */}
-              <AddressForm 
+              <AddressForm
                 onAddressAdded={(address) => {
                   setAddresses(prev => [...prev, address])
-                  toast.success(`Address ${address.deliveryId} added successfully!`)
+                  toast.success('Address added successfully!')
                 }}
                 onError={(error) => {
                   toast.error(error)
@@ -507,39 +453,11 @@ function App() {
                 🗺️ Route Visualization
               </h2>
               
-              <div className="w-full h-80 rounded-lg overflow-hidden border">
-                {addresses.length > 0 ? (
-                  <RouteMap
-                    addresses={addresses.map(addr => ({
-                      id: addr.id,
-                      address: addr.address,
-                      coordinates: addr.coordinates,
-                      deliveryId: addr.deliveryId,
-                      bottleCount: addr.bottleCount,
-                      priority: 5,
-                      addressType: 'RESIDENTIAL' as const,
-                      timeWindow: undefined,
-                      customerNotes: undefined,
-                      accessInstructions: undefined,
-                      contactInfo: undefined
-                    }))}
-                    tours={optimizedRoutes}
-                    hqLocation={{ lat: 48.1375, lng: 11.5755 }}
-                    showRoutes={optimizedRoutes.length > 0}
-                    className="h-80"
-                  />
-                ) : (
-                  <div className="w-full h-80 bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
-                    <div className="text-center">
-                      <div className="text-4xl mb-2">🗺️</div>
-                      <p className="text-gray-600 mb-2">Add addresses to see them on the map</p>
-                      <p className="text-sm text-gray-500">
-                        Interactive map will display your delivery locations
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
+              <RouteMap 
+                addresses={addresses}
+                routes={optimizedRoutes}
+                className="w-full h-80"
+              />
             </div>
           </div>
 
