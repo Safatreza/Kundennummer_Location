@@ -1,8 +1,12 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, Suspense } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'react-hot-toast'
 import toast from 'react-hot-toast'
-import { RouteMap } from './components/map/RouteMap'
+
+// Lazy load the RouteMap component to prevent potential SSR issues
+const RouteMap = React.lazy(() => 
+  import('./components/map/RouteMap').then(module => ({ default: module.RouteMap }))
+)
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -20,7 +24,16 @@ function App() {
   const [isLoading, setIsLoading] = useState(false)
   const [isOptimizing, setIsOptimizing] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
+  const [backgroundImageLoaded, setBackgroundImageLoaded] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Preload background image
+  React.useEffect(() => {
+    const img = new Image()
+    img.onload = () => setBackgroundImageLoaded(true)
+    img.onerror = () => setBackgroundImageLoaded(true) // Continue even if image fails
+    img.src = '/Background.jpg'
+  }, [])
 
   // Address form state
   const [formData, setFormData] = useState({
@@ -752,12 +765,14 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <div 
         className="min-h-screen bg-gray-50"
-        style={{
+        style={backgroundImageLoaded ? {
           backgroundImage: 'url(/Background.jpg)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundAttachment: 'fixed',
           backgroundRepeat: 'no-repeat'
+        } : {
+          backgroundColor: '#f8fafc'
         }}
       >
         {/* Header */}
@@ -977,6 +992,15 @@ function App() {
               </h2>
               
               <div className="w-full h-80">
+                <Suspense fallback={
+                  <div className="w-full h-80 bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
+                    <div className="text-center">
+                      <div className="text-4xl mb-2">🗺️</div>
+                      <p className="text-gray-600 mb-2">Loading Interactive Map...</p>
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+                    </div>
+                  </div>
+                }>
                 <RouteMap
                   addresses={addresses.map(addr => ({
                     id: addr.id,
@@ -1017,6 +1041,7 @@ function App() {
                   showRoutes={true}
                   className="rounded-lg"
                 />
+                </Suspense>
               </div>
               
               <div className="mt-4 text-sm text-gray-600 bg-blue-50/50 border border-blue-200 rounded p-3">

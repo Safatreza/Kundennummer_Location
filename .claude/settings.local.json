@@ -16,7 +16,8 @@
       "Bash(npm install:*)",
       "Bash(git ls-tree:*)",
       "Bash(cat:*)",
-      "Bash(npm run typecheck:*)"
+      "Bash(npm run typecheck:*)",
+      "Bash(vercel:*)"
     ],
     "deny": [],
     "ask": []
