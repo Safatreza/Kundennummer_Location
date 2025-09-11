@@ -17,7 +17,8 @@
       "Bash(git ls-tree:*)",
       "Bash(cat:*)",
       "Bash(npm run typecheck:*)",
-      "Bash(vercel:*)"
+      "Bash(vercel:*)",
+      "Bash(git remote get-url:*)"
     ],
     "deny": [],
     "ask": []

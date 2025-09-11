@@ -794,7 +794,7 @@ function App() {
                 </h1>
               </div>
               <div className="text-sm text-gray-600">
-                v4.0.0 - Enterprise Edition
+                v4.0.1 - Enterprise Edition
               </div>
             </div>
           </div>
