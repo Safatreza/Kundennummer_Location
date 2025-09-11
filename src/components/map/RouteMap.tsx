@@ -328,7 +328,7 @@ export const RouteMap: React.FC<RouteMapProps> = ({
         <Marker position={[hqLocation.lat, hqLocation.lng]} icon={createHQMarker()}>
           <Popup>
             <div className="p-2">
-              <div className="font-semibold text-primary">AboutWater HQ</div>
+              <div className="font-semibold text-primary">aboutwater HQ</div>
               <div className="text-sm text-muted-foreground">Central Depot</div>
               <div className="text-xs text-muted-foreground mt-1">
                 All routes start and end here

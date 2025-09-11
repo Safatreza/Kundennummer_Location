@@ -38,7 +38,7 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="relative">
               <img
                 src="/logo.png"
-                alt="AboutWater Logo"
+                alt="aboutwater Logo"
                 className="h-12 w-12 rounded-full border-2 border-white/50 object-contain bg-white/10 backdrop-blur-sm"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement
@@ -54,7 +54,7 @@ export const Header: React.FC<HeaderProps> = ({
             
             <div className="hidden sm:block">
               <h1 className="text-xl font-bold text-white text-shadow">
-                AboutWater Route Optimizer
+                aboutwater Route Optimizer
               </h1>
               <p className="text-sm text-white/80 font-medium">
                 making water your water

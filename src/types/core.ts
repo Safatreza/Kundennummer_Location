@@ -1,5 +1,5 @@
 /**
- * Core types for the AboutWater Route Optimization System
+ * Core types for the aboutwater Route Optimization System
  * Enterprise-grade type definitions with comprehensive validation
  */
 

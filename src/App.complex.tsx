@@ -242,10 +242,10 @@ function App() {
         dateFormat: 'DD/MM/YYYY',
         timeFormat: '24h',
         metadata: {
-          title: 'AboutWater Optimized Tours',
+          title: 'aboutwater Optimized Tours',
           description: 'Route optimization results for delivery tours',
-          company: 'AboutWater GmbH',
-          createdBy: 'AboutWater Route Optimizer',
+          company: 'aboutwater GmbH',
+          createdBy: 'aboutwater Route Optimizer',
           exportDate: new Date().toISOString(),
           version: '2.0.0',
           totalTours: tours.length,

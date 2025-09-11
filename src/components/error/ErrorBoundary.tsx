@@ -151,7 +151,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             <CardContent className="space-y-6">
               <div className="text-center text-muted-foreground">
                 <p className="mb-2">
-                  We apologize for the inconvenience. An unexpected error occurred in the AboutWater Route Optimizer.
+                  We apologize for the inconvenience. An unexpected error occurred in the aboutwater Route Optimizer.
                 </p>
                 <p className="text-sm">
                   Error ID: <code className="font-mono bg-muted px-2 py-1 rounded">{this.state.errorId}</code>

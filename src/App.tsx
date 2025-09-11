@@ -388,7 +388,7 @@ function App() {
       `• Links work on both Android and iOS devices\n` +
       `• Route will automatically open in Maps app\n` +
       `• Follow the optimized sequence for best efficiency\n\n` +
-      `Safe driving!\nAboutWater Team`
+      `Safe driving!\naboutwater Team`
 
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -427,7 +427,7 @@ function App() {
     }
 
     const route = optimizedRoutes[routeIndex]
-    const subject = encodeURIComponent(`AboutWater Delivery Route ${routeIndex + 1} - ${route.addresses.length} stops`)
+    const subject = encodeURIComponent(`aboutwater Delivery Route ${routeIndex + 1} - ${route.addresses.length} stops`)
     const body = encodeURIComponent(
       `Hi! Here's your optimized delivery route for today:\n\n` +
       `Route ${routeIndex + 1} Details:\n` +
@@ -439,7 +439,7 @@ function App() {
       `Click this link to open your route in Google Maps:\n${link}\n\n` +
       `The route will automatically open in your Google Maps app on mobile devices.\n\n` +
       `Safe driving!\n` +
-      `AboutWater Team`
+      `aboutwater Team`
     )
 
     const mailtoLink = `mailto:?subject=${subject}&body=${body}`
@@ -532,7 +532,7 @@ function App() {
 
       // Create summary sheet
       const summaryData = [
-        ['AboutWater Route Optimization Report'],
+        ['aboutwater Route Optimization Report'],
         ['Generated:', new Date().toLocaleString()],
         ['Total Routes:', optimizedRoutes.length],
         ['Total Addresses:', addresses.length],
@@ -579,7 +579,7 @@ function App() {
         XLSX.utils.book_append_sheet(wb, ws, `Route ${routeIndex + 1}`)
       })
 
-      const fileName = `AboutWater_Routes_${new Date().toISOString().split('T')[0]}.xlsx`
+      const fileName = `aboutwater_Routes_${new Date().toISOString().split('T')[0]}.xlsx`
       XLSX.writeFile(wb, fileName)
       toast.success(`Routes exported to Excel successfully! Downloaded: ${fileName}`, { id: 'export-excel' })
       
@@ -632,7 +632,7 @@ function App() {
 
       // Create summary CSV
       const summaryData = [
-        ['AboutWater Route Optimization Report'],
+        ['aboutwater Route Optimization Report'],
         ['Generated', new Date().toLocaleString()],
         ['Total Routes', optimizedRoutes.length],
         ['Total Addresses', addresses.length],
@@ -651,7 +651,7 @@ function App() {
       ]
 
       const summaryCSV = createCSV(summaryData)
-      downloadCSV(summaryCSV, `AboutWater_Routes_Summary_${timestamp}.csv`)
+      downloadCSV(summaryCSV, `aboutwater_Routes_Summary_${timestamp}.csv`)
 
       // Create detailed routes CSV
       const detailedData = [
@@ -677,7 +677,7 @@ function App() {
       })
 
       const detailedCSV = createCSV(detailedData)
-      downloadCSV(detailedCSV, `AboutWater_Routes_Detailed_${timestamp}.csv`)
+      downloadCSV(detailedCSV, `aboutwater_Routes_Detailed_${timestamp}.csv`)
 
       // Create individual route CSVs
       const individualFiles = []
@@ -705,14 +705,14 @@ function App() {
         ]
 
         const routeCSV = createCSV(routeData)
-        const filename = `AboutWater_Route_${routeIndex + 1}_${timestamp}.csv`
+        const filename = `aboutwater_Route_${routeIndex + 1}_${timestamp}.csv`
         downloadCSV(routeCSV, filename)
         individualFiles.push(filename)
       }
 
       const fileList = [
-        `AboutWater_Routes_Summary_${timestamp}.csv`,
-        `AboutWater_Routes_Detailed_${timestamp}.csv`,
+        `aboutwater_Routes_Summary_${timestamp}.csv`,
+        `aboutwater_Routes_Detailed_${timestamp}.csv`,
         ...individualFiles
       ]
 
@@ -782,7 +782,7 @@ function App() {
               <div className="flex items-center">
                 <img 
                   src="/logo.png" 
-                  alt="AboutWater" 
+                  alt="aboutwater" 
                   className="h-12 w-auto mr-3"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
@@ -790,7 +790,7 @@ function App() {
                   }}
                 />
                 <h1 className="text-2xl font-bold text-gray-800">
-                  AboutWater Route Optimizer
+                  aboutwater Route Optimizer
                 </h1>
               </div>
               <div className="text-sm text-gray-600">

@@ -37,7 +37,7 @@ export default defineConfig({
         ],
       },
       manifest: {
-        name: 'AboutWater Route Optimizer',
+        name: 'aboutwater Route Optimizer',
         short_name: 'RouteOptimizer',
         description: 'Enterprise route optimization for water delivery',
         theme_color: '#1c5975',

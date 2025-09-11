@@ -27,7 +27,7 @@ function SimpleApp() {
               <div className="flex items-center">
                 <img 
                   src="/logo.png" 
-                  alt="AboutWater" 
+                  alt="aboutwater" 
                   className="h-12 w-auto mr-3"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
@@ -35,7 +35,7 @@ function SimpleApp() {
                   }}
                 />
                 <h1 className="text-2xl font-bold text-gray-800">
-                  AboutWater Route Optimizer
+                  aboutwater Route Optimizer
                 </h1>
               </div>
               <div className="text-sm text-gray-600">

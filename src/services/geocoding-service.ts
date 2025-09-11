@@ -354,7 +354,7 @@ class GeocodingService {
 
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'AboutWater Route Optimizer/4.0.0 (contact@aboutwater.com)',
+        'User-Agent': 'aboutwater Route Optimizer/4.0.0 (contact@aboutwater.com)',
       },
       signal: AbortSignal.timeout(options.timeout || 10000),
     })
@@ -467,7 +467,7 @@ class GeocodingService {
 
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'AboutWater Route Optimizer/4.0.0 (contact@aboutwater.com)',
+        'User-Agent': 'aboutwater Route Optimizer/4.0.0 (contact@aboutwater.com)',
       },
       signal: AbortSignal.timeout(options.timeout || 10000),
     })

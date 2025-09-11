@@ -191,7 +191,7 @@ function GuaranteedApp() {
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <img 
               src="/logo.png" 
-              alt="AboutWater" 
+              alt="aboutwater" 
               style={{ height: '48px', marginRight: '12px' }}
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
@@ -199,7 +199,7 @@ function GuaranteedApp() {
               }}
             />
             <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
-              AboutWater Route Optimizer
+              aboutwater Route Optimizer
             </h1>
           </div>
           <div style={{ fontSize: '14px', color: '#6b7280' }}>

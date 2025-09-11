@@ -1,5 +1,5 @@
 /**
- * UI and component-specific types for the AboutWater Route Optimizer
+ * UI and component-specific types for the aboutwater Route Optimizer
  * Interface definitions for React components and user interactions
  */
 

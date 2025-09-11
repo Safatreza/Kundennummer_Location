@@ -2,7 +2,7 @@
   "name": "@aboutwater/route-optimizer",
   "version": "4.0.0",
   "type": "module",
-  "description": "Enterprise-grade route optimization system for AboutWater delivery logistics",
+  "description": "Enterprise-grade route optimization system for aboutwater delivery logistics",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -97,7 +97,7 @@
     "vite",
     "enterprise"
   ],
-  "author": "AboutWater GmbH",
+  "author": "aboutwater GmbH",
   "license": "Proprietary",
   "repository": {
     "type": "git",

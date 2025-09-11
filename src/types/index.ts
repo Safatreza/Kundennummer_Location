@@ -1,5 +1,5 @@
 /**
- * Centralized type exports for the AboutWater Route Optimization System
+ * Centralized type exports for the aboutwater Route Optimization System
  * Re-exports all types for easy importing throughout the application
  */
 

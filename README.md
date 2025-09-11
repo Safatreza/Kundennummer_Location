@@ -1,4 +1,4 @@
-# AboutWater Route Optimizer v3.0.0
+# aboutwater Route Optimizer v3.0.0
 
 **Professional Route Optimization System for Water Bottle Deliveries**
 
@@ -21,7 +21,7 @@ A modern, production-ready web application built with FastAPI and Leaflet.js for
 
 ### 🗺️ **Advanced Route Optimization**
 - **Intelligent Algorithm**: Priority-aware nearest neighbor with bottle capacity constraints  
-- **HQ Integration**: Always starts and ends at AboutWater HQ in Planegg
+- **HQ Integration**: Always starts and ends at aboutwater HQ in Planegg
 - **Real-time Geocoding**: Automatic address-to-coordinate conversion
 - **Distance Calculation**: Precise haversine distance calculations
 
@@ -140,7 +140,7 @@ The system uses an advanced optimization algorithm:
 
 ### **Project Structure**
 ```
-AboutWater Route Optimizer/
+aboutwater Route Optimizer/
 ├── app/
 │   ├── __init__.py
 │   ├── config.py              # Application configuration
@@ -415,8 +415,8 @@ GET /server-info    # Server information and uptime
 
 ## 🤝 Support & Contributing
 
-### **About AboutWater GmbH**
-This application is developed for AboutWater GmbH, a professional water delivery service based in Planegg, Germany.
+### **About aboutwater GmbH**
+This application is developed for aboutwater GmbH, a professional water delivery service based in Planegg, Germany.
 
 ### **Technical Support**
 - Check server status via `/server-info` endpoint
@@ -433,9 +433,9 @@ This application is developed for AboutWater GmbH, a professional water delivery
 
 ## 📄 License
 
-© 2024 AboutWater GmbH. All rights reserved.  
+© 2024 aboutwater GmbH. All rights reserved.  
 This software is proprietary and confidential.
 
 ---
 
-**AboutWater Route Optimizer** - Delivering Excellence Through Technology
+**aboutwater Route Optimizer** - Delivering Excellence Through Technology

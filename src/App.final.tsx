@@ -14,7 +14,7 @@ const queryClient = new QueryClient({
   },
 })
 
-function AboutWaterApp() {
+function aboutwaterApp() {
   const [addresses, setAddresses] = useState<any[]>([])
   const [optimizedRoutes, setOptimizedRoutes] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -229,7 +229,7 @@ function AboutWaterApp() {
         XLSX.utils.book_append_sheet(wb, ws, `Route ${routeIndex + 1}`)
       })
 
-      XLSX.writeFile(wb, `AboutWater_Routes_${new Date().toISOString().split('T')[0]}.xlsx`)
+      XLSX.writeFile(wb, `aboutwater_Routes_${new Date().toISOString().split('T')[0]}.xlsx`)
       toast.success('Routes exported to Excel successfully!')
       
     } catch (error) {
@@ -278,7 +278,7 @@ function AboutWaterApp() {
               <div className="flex items-center">
                 <img 
                   src="/logo.png" 
-                  alt="AboutWater" 
+                  alt="aboutwater" 
                   className="h-12 w-auto mr-3"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
@@ -286,7 +286,7 @@ function AboutWaterApp() {
                   }}
                 />
                 <h1 className="text-2xl font-bold text-gray-800">
-                  AboutWater Route Optimizer
+                  aboutwater Route Optimizer
                 </h1>
               </div>
               <div className="text-sm text-gray-600">
@@ -595,4 +595,4 @@ function AboutWaterApp() {
   )
 }
 
-export default AboutWaterApp
+export default aboutwaterApp

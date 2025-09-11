@@ -1,7 +1,7 @@
 {
-  "name": "AboutWater Route Optimizer",
+  "name": "aboutwater Route Optimizer",
   "short_name": "RouteOptimizer",
-  "description": "Enterprise-grade route optimization system for AboutWater delivery logistics",
+  "description": "Enterprise-grade route optimization system for aboutwater delivery logistics",
   "version": "4.0.0",
   "start_url": "/",
   "display": "standalone",
@@ -84,14 +84,14 @@
       "sizes": "1280x720",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "AboutWater Route Optimizer main interface"
+      "label": "aboutwater Route Optimizer main interface"
     },
     {
       "src": "/screenshot-mobile.png",
       "sizes": "390x844",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "AboutWater Route Optimizer mobile view"
+      "label": "aboutwater Route Optimizer mobile view"
     }
   ],
   "related_applications": [],
